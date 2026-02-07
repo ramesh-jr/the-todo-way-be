@@ -1,0 +1,81 @@
+---
+description: API design conventions for the-todo-way backend
+globs: ["app/api/**/*.py", "app/schemas/**/*.py"]
+---
+
+# API Conventions
+
+## URL Structure
+
+- Base: `/api/v1/`
+- Resources: plural nouns (`/todos`, `/sections`, `/labels`)
+- Nested resources: `/sections/{id}/subsections`
+- Actions: `PATCH /todos/{id}/complete`, `PATCH /todos/{id}/schedule`
+- Path params use UUID: `{id}` (not `{todo_id}`)
+
+## HTTP Methods
+
+- `GET` -- read (list or single)
+- `POST` -- create
+- `PUT` -- full update (all fields required)
+- `PATCH` -- partial update or action
+- `DELETE` -- delete
+
+## Request Validation
+
+- All request bodies validated via Pydantic schemas
+- Query params validated via FastAPI `Query()` with constraints
+- Path params: `uuid.UUID` type annotation auto-validates
+
+## Response Format
+
+```python
+class ApiResponse(BaseModel, Generic[T]):
+    data: T
+    error: str | None = None
+    meta: PaginationMeta | None = None
+
+class PaginationMeta(BaseModel):
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
+```
+
+## Pagination
+
+- Offset-based: `?page=1&per_page=50`
+- Default per_page: 50, max: 100
+- Response includes `meta` with pagination info
+- Small collections (sections, labels): no pagination, return all
+
+## Sorting
+
+- `?sort_by=scheduled_date&sort_order=asc`
+- Allowed sort fields: `scheduled_date`, `priority`, `created_at`, `deadline_date`
+- Default: `scheduled_date asc` (nulls last)
+
+## Filtering
+
+- Query params: `?section_id=xxx&priority=p1&show_completed=false`
+- Label filtering: `?label_ids=id1,id2` (comma-separated)
+- Date range: `?date_from=ISO&date_to=ISO`
+
+## Error Responses
+
+- 400: Validation error (Pydantic auto-handles)
+- 401: Missing/invalid JWT
+- 404: Resource not found
+- 409: Conflict (e.g., user already exists on setup)
+- 500: Unexpected error
+
+All errors return `ApiResponse(data=None, error="message")`.
+
+## Status Codes
+
+- `200` -- successful GET, PUT, PATCH
+- `201` -- successful POST (created)
+- `204` -- successful DELETE (no content)
+- `401` -- unauthorized
+- `404` -- not found
+- `409` -- conflict

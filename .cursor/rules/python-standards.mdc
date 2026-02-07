@@ -1,0 +1,68 @@
+---
+description: Python coding standards for the-todo-way backend
+globs: ["**/*.py"]
+---
+
+# Python Standards
+
+## Language Version
+
+Python 3.13+. Use modern syntax:
+- `str | None` instead of `Optional[str]`
+- `list[str]` instead of `List[str]`
+- `type` aliases where appropriate
+- `match` statements for complex branching
+
+## Naming
+
+- Files: snake_case (`todo_service.py`, `todo_routes.py`)
+- Classes: PascalCase (`TodoService`, `TodoCreate`, `Todo`)
+- Functions: snake_case (`get_todos`, `create_todo`)
+- Constants: UPPER_SNAKE_CASE (`MAX_DURATION_MINUTES = 480`)
+- Private: prefix with underscore (`_get_todo_or_404`)
+
+## Type Hints
+
+- Type hints on ALL function signatures (params + return)
+- mypy strict mode compliance
+- Use `Mapped[T]` for SQLAlchemy columns
+- Use `Literal["a", "b"]` for fixed string sets
+- NEVER use `Any` -- use `unknown` patterns or proper generics
+
+## Async
+
+- All route handlers: `async def`
+- All service methods: `async def`
+- All DB operations: async SQLAlchemy (`await session.execute(...)`)
+- Use `AsyncSession`, `async_sessionmaker`, `create_async_engine`
+
+## Docstrings
+
+Google style on all public functions:
+```python
+async def create_todo(self, user_id: uuid.UUID, data: TodoCreate) -> Todo:
+    """Create a new todo for the given user.
+
+    Args:
+        user_id: The ID of the user creating the todo.
+        data: Validated todo creation data.
+
+    Returns:
+        The newly created Todo model instance.
+
+    Raises:
+        NotFoundException: If the referenced section doesn't exist.
+    """
+```
+
+## Code Style
+
+- Ruff for formatting (line length 88) and linting
+- Imports sorted by Ruff (isort-compatible)
+- Prefer early returns for guard clauses
+- Keep functions under 50 lines
+- No mutable default arguments
+
+## Commits
+
+Conventional Commits: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`

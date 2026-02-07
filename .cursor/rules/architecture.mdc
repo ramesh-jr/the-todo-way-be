@@ -1,0 +1,60 @@
+---
+description: Backend architecture rules for the-todo-way
+globs: ["app/**/*.py"]
+---
+
+# Architecture Rules
+
+## Layered Structure (Strict)
+
+```
+Routes (app/api/) -> Services (app/services/) -> Models (app/models/) + DB (app/db/)
+```
+
+### Routes (`app/api/v1/routes/`)
+- Thin handlers: validate input, call service, return response
+- NEVER import SQLAlchemy models or session directly
+- ALWAYS use `Depends(get_db)` and `Depends(get_current_user)`
+- ALWAYS return `ApiResponse[T]`
+
+### Services (`app/services/`)
+- All business logic lives here
+- Receive `AsyncSession` via constructor or parameter
+- Perform DB queries using SQLAlchemy
+- NEVER return HTTP responses or raise HTTPException (raise AppException instead)
+- NEVER import from `app.api`
+
+### Models (`app/models/`)
+- SQLAlchemy ORM models only
+- Define relationships, indexes, constraints
+- Use `TimestampMixin` for created_at/updated_at
+- UUIDs as primary keys
+
+### Schemas (`app/schemas/`)
+- Pydantic models for request/response validation
+- Create, Update, Response variants per resource
+- All fields explicitly typed (no implicit Any)
+
+### Core (`app/core/`)
+- `config.py`: Pydantic BaseSettings (env vars)
+- `security.py`: JWT + password hashing
+- `dependencies.py`: FastAPI Depends (get_db, get_current_user)
+- `exceptions.py`: Custom exception classes
+
+## Import Rules
+
+- Routes import from: schemas, services, core.dependencies
+- Services import from: models, db, core.exceptions
+- Models import from: db.base only
+- NO circular imports. NO cross-layer shortcuts.
+
+## API Response Format
+
+Every endpoint returns:
+```python
+ApiResponse(data=..., error=None, meta=PaginationMeta(...) or None)
+```
+Error responses:
+```python
+ApiResponse(data=None, error="message", meta=None)
+```

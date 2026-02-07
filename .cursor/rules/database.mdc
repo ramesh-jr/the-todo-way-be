@@ -1,0 +1,74 @@
+---
+description: Database and SQLAlchemy patterns for the-todo-way
+globs: ["app/models/**/*.py", "app/db/**/*.py", "app/services/**/*.py", "alembic/**/*.py"]
+---
+
+# Database Rules
+
+## SQLAlchemy 2.0 Style
+
+- Use `DeclarativeBase` (not legacy `declarative_base()`)
+- Use `Mapped[T]` and `mapped_column()` for all columns
+- Use `relationship()` with `back_populates`
+- Async engine: `create_async_engine` with `asyncpg` driver
+
+## Model Conventions
+
+```python
+class Todo(Base, TimestampMixin):
+    __tablename__ = "todos"
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    # ... columns ...
+```
+
+- Table names: plural snake_case (`todos`, `todo_labels`)
+- Primary keys: UUID v4 (never auto-increment integers)
+- Use `TimestampMixin` for `created_at` / `updated_at`
+- Nullable columns: `Mapped[str | None]`
+- Indexes on: foreign keys, frequently queried columns, composite patterns
+
+## Key Indexes
+
+```python
+__table_args__ = (
+    Index("ix_todos_user_completed", "user_id", "is_completed"),
+    Index("ix_todos_user_section", "user_id", "section_id"),
+    Index("ix_todos_user_scheduled", "user_id", "scheduled_date"),
+)
+```
+
+## Session Management
+
+```python
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        except Exception:
+            await session.rollback()
+            raise
+```
+
+- Use `expire_on_commit=False` on session factory
+- Use `selectinload()` for eager loading relationships (avoid N+1)
+- Commit in service methods, not in routes
+
+## Migrations (Alembic)
+
+- Auto-generate: `uv run alembic revision --autogenerate -m "description"`
+- Apply: `uv run alembic upgrade head`
+- Rollback: `uv run alembic downgrade -1`
+- Migration messages: lowercase, descriptive ("add deadline_date to todos")
+- Review auto-generated migrations before applying
+
+## Priority Enum
+
+Stored as `String(2)` (not a DB enum) for simplicity: `"p1"`, `"p2"`, `"p3"`, `"p4"`.
+Validated at the Pydantic schema level via `Literal["p1", "p2", "p3", "p4"]`.
+
+## Soft Behaviors
+
+- Completing a todo: set `is_completed=True`, `completed_at=now()`
+- Un-completing: set `is_completed=False`, `completed_at=None`
+- Deleting a section: set todos' `section_id=None` (don't cascade delete todos)
+- Deleting a label: remove from `todo_labels` join table (cascade)
