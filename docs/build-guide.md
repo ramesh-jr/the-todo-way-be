@@ -35,7 +35,7 @@ Read AGENTS.md and docs/lld-backend.md Sections 5, 6, 7. Then do BE-1:
    (conditional on ENVIRONMENT != "local").
 7. Verify it starts: uv run uvicorn app.main:app --reload
 
-Commit with message "feat: set up FastAPI app with config, exceptions, and DB session".
+Wait for me to provide approval to commit with message "feat: set up FastAPI app with config, exceptions, and DB session".
 ```
 
 ## BE-2: Database Models + Migrations
@@ -56,7 +56,7 @@ Read AGENTS.md and docs/lld-backend.md Section 1. Then do BE-2:
 9. Generate initial migration: uv run alembic revision --autogenerate -m "initial schema"
 10. Start DB and apply: docker compose up db -d && uv run alembic upgrade head
 
-Commit with message "feat: add database models and initial migration".
+Wait for me to provide approval to commit with message "feat: add database models and initial migration".
 ```
 
 ## BE-3: Auth Endpoints
@@ -77,7 +77,7 @@ Read AGENTS.md and docs/lld-backend.md Sections 3.1 and 8. Then do BE-3:
 7. Test manually: start the server, call /api/v1/auth/setup with curl or the Swagger UI 
    at /docs, then call /api/v1/auth/login.
 
-Commit with message "feat: add JWT auth with setup and login endpoints".
+Wait for me to provide approval to commit with message "feat: add JWT auth with setup and login endpoints".
 ```
 
 ## BE-4: Todo CRUD API
@@ -98,7 +98,7 @@ Read AGENTS.md and docs/lld-backend.md Sections 2.2, 3.2, and 4.1. Then do BE-4:
 4. Register todos router in app/api/v1/__init__.py.
 5. Test via Swagger UI: create a todo, list todos, update, complete, schedule, delete.
 
-Commit with message "feat: add todo CRUD API with filtering and scheduling".
+Wait for me to provide approval to commit with message "feat: add todo CRUD API with filtering and scheduling".
 ```
 
 ## BE-5: Sections, Subsections, Labels API
@@ -119,7 +119,7 @@ Then do BE-5:
 7. Register both routers in app/api/v1/__init__.py.
 8. Test via Swagger UI.
 
-Commit with message "feat: add sections, subsections, and labels CRUD API".
+Wait for me to provide approval to commit with message "feat: add sections, subsections, and labels CRUD API".
 ```
 
 ## BE-6: Tests
@@ -159,7 +159,7 @@ Read AGENTS.md and docs/lld-backend.md. Then do BE-6:
 
 6. Run all tests: uv run pytest -v
 
-Commit with message "test: add comprehensive API tests for all endpoints".
+Wait for me to provide approval to commit with message "test: add comprehensive API tests for all endpoints".
 ```
 
 ---
@@ -192,7 +192,7 @@ Read AGENTS.md and docs/lld-backend.md. Then do INFRA-1:
    - make deploy-staging
    - make deploy-prod
 
-Commit with message "feat: add Docker Compose refinements and AWS CDK infrastructure".
+Wait for me to provide approval to commit with message "feat: add Docker Compose refinements and AWS CDK infrastructure".
 ```
 
 ## INFRA-2: CI/CD with GitHub Actions
@@ -217,7 +217,7 @@ Read AGENTS.md. Then do INFRA-2:
 3. Note: The FE repo CI/CD will be created separately when working in that repo.
    For reference, FE CI would be: lint + typecheck + build + deploy to S3/CloudFront.
 
-Commit with message "ci: add GitHub Actions for linting, testing, and deployment".
+Wait for me to provide approval to commit with message "ci: add GitHub Actions for linting, testing, and deployment".
 ```
 
 ---
@@ -239,5 +239,5 @@ Read AGENTS.md and docs/lld-frontend.md Section 6. Then do FE-API-SWAP:
 6. Update LoginPage to call real /api/v1/auth/login and store JWT in localStorage.
 7. Test full flow: login -> create todo -> drag to calendar -> verify in DB.
 
-Commit with message "feat: integrate frontend with real backend API".
+Wait for me to provide approval to commit with message "feat: integrate frontend with real backend API".
 ```
