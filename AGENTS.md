@@ -70,5 +70,5 @@ App reads config from env vars via Pydantic `BaseSettings`. Same code runs in Do
 
 ## Reference Docs
 
-- Frontend repo `docs/lld.md` -- Full LLD with DB schema, API contracts, store shapes
-- Frontend repo `docs/plans/` -- Versioned project plans
+- `docs/lld-backend.md` -- Backend LLD: DB schema, Pydantic schemas, API contracts, service layer, auth flow
+- `docs/plans/` -- Versioned project plans (v0, v1, v2) -- shared across FE and BE repos
