@@ -1,5 +1,21 @@
 """SQLAlchemy declarative base and mixins."""
 
-# TODO: Implement in BE-2 conversation
-# - Base (DeclarativeBase)
-# - TimestampMixin (created_at, updated_at)
+from datetime import datetime
+
+from sqlalchemy import func
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+
+class Base(DeclarativeBase):
+    """Base class for all SQLAlchemy ORM models."""
+
+    pass
+
+
+class TimestampMixin:
+    """Mixin that adds created_at and updated_at timestamp columns."""
+
+    created_at: Mapped[datetime] = mapped_column(default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        default=func.now(), onupdate=func.now()
+    )
