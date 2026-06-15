@@ -22,3 +22,17 @@ class ConflictException(AppException):
 
     def __init__(self, detail: str) -> None:
         super().__init__(409, detail)
+
+
+class BadRequestException(AppException):
+    """Raised when input is invalid in a way Pydantic cannot express."""
+
+    def __init__(self, detail: str = "Bad request") -> None:
+        super().__init__(400, detail)
+
+
+class UnauthorizedException(AppException):
+    """Raised when authentication fails."""
+
+    def __init__(self, detail: str = "Not authenticated") -> None:
+        super().__init__(401, detail)

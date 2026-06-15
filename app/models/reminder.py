@@ -6,26 +6,26 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
 if TYPE_CHECKING:
-    from app.models.todo import Todo
+    from app.models.item import Item
 
 
 class Reminder(Base):
-    """Reminder entry for a todo (stored, not delivered in MVP)."""
+    """Reminder entry for an item, delivered via web-push when scheduled."""
 
     __tablename__ = "reminders"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    todo_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("todos.id"), index=True
+    item_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("items.id", ondelete="CASCADE"), index=True
     )
-    remind_at: Mapped[datetime]
-    type: Mapped[str] = mapped_column(String(20))  # before_5min, before_15min, etc.
+    remind_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    offset_type: Mapped[str] = mapped_column(String(20))  # before_5min, before_1hr, ...
 
     # Relationships
-    todo: Mapped[Todo] = relationship(back_populates="reminders")
+    item: Mapped[Item] = relationship(back_populates="reminders")

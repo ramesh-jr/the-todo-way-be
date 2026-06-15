@@ -1,9 +1,14 @@
 """SQLAlchemy declarative base and mixins."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy import func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+
+def utcnow() -> datetime:
+    """Timezone-aware UTC now (used as a Python-side column default)."""
+    return datetime.now(UTC)
 
 
 class Base(DeclarativeBase):
