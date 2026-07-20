@@ -21,21 +21,35 @@ The user's data is never a hostage: a complete export is one click away at any t
 
 ### Restore path
 
-1. Provision a clean database and run migrations: `alembic upgrade head`.
+1. Provision a clean database and run migrations: `alembic upgrade head` (or `make migrate`).
 2. Restore from the managed Postgres snapshot (preferred — full fidelity), OR
-3. Re-import a JSON snapshot from `backups/` via a one-off import script that recreates rows
-   through the service layer (preserves validation + the Goodhart guard).
+3. Re-import a JSON snapshot:
+
+   ```bash
+   # Create the user first (setup), then:
+   make import-backup ACCOUNT=yourname FILE=backups/backup-….json
+   # or: uv run python scripts/import_backup.py --username yourname path/to/export.json
+   ```
+
+   Calendar OAuth tokens are **not** in the export — reconnect Google/Outlook after import.
+
+### Scheduled backups
+
+```bash
+make backup   # writes backups/backup-<user_id>-<stamp>.json for every user
+```
+
+Wire to cron / EventBridge daily, and copy `backups/` to durable object storage.
 
 ## Account recovery
 
-Single-user JWT auth previously had no recovery; losing the password meant losing the whole
-life OS. Now:
-
 - A `recovery_email` can be set at `POST /api/v1/auth/setup`.
 - `POST /api/v1/auth/recovery/request` issues a short-lived, hashed recovery code (TTL via
-  `RECOVERY_CODE_TTL_MINUTES`). In production this is emailed; the code is never stored in
-  plaintext (SHA-256) and the endpoint never reveals whether an account/email exists.
+  `RECOVERY_CODE_TTL_MINUTES`). Delivery uses `EmailService`: SMTP when configured, otherwise
+  console log in local. Local also returns `data.dev_code` for testing. The code is never
+  stored in plaintext; the endpoint does not reveal whether an account/email exists.
 - `POST /api/v1/auth/recovery/reset` resets the password with a valid, unexpired code.
+- Configure SMTP via `SMTP_*` env vars (see `.env.example` and `docs/ops-pending.md`).
 
 ## Sensitive-data handling
 

@@ -1,4 +1,4 @@
-.PHONY: help dev db migrate test lint format check clean
+.PHONY: help dev db migrate test lint format check clean reminders backup import-backup
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -27,6 +27,17 @@ migrate-new: ## Create a new migration (usage: make migrate-new MSG="add xyz")
 
 migrate-down: ## Rollback last migration
 	uv run alembic downgrade -1
+
+# === Jobs (cron / EventBridge) ===
+
+reminders: ## Deliver due Web Push reminders
+	uv run python scripts/deliver_reminders.py
+
+backup: ## Write JSON backups for all users into backups/
+	uv run python scripts/backup_all.py
+
+import-backup: ## Import a JSON backup (usage: make import-backup ACCOUNT=alice FILE=backups/x.json)
+	uv run python scripts/import_backup.py --username "$(ACCOUNT)" "$(FILE)"
 
 # === Quality ===
 

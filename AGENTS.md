@@ -2,73 +2,60 @@
 
 ## Project Overview
 
-REST API backend for a Todoist-like personal productivity app. Single-user, JWT auth, Python/FastAPI. Serves the React frontend with CRUD for todos, sections, subsections, and labels.
+REST API for a personal Life Command Center. Single-user JWT auth. Domains, standards, reflections, priorities, routines, items (capture/clarify/schedule), calendar sync (Google/Outlook), reviews, nudges, export/backup, web-push, account recovery.
 
 ## Tech Stack
 
 - Python 3.13, FastAPI
-- SQLAlchemy 2.0 (async via asyncpg), Alembic (migrations)
+- SQLAlchemy 2.0 (async via asyncpg), Alembic
 - PostgreSQL 16
-- Pydantic v2 (validation, settings)
-- JWT auth: python-jose + passlib[bcrypt]
+- Pydantic v2
+- JWT: python-jose + bcrypt
 - ASGI: Uvicorn (local), Mangum (AWS Lambda)
-- Testing: pytest + pytest-asyncio + httpx
-- Linting: Ruff (format + lint), mypy (type checking)
-- Dependency mgmt: uv + pyproject.toml
+- pywebpush, httpx, cryptography (Fernet for OAuth tokens)
+- pytest + pytest-asyncio + httpx; Ruff; mypy; uv
 
 ## Architecture
 
-**Layered structure** -- strict separation, no cross-layer imports:
-
 ```
-Routes (thin) -> Services (business logic) -> Models/DB (data access)
+Routes (thin) -> Services (business logic) -> Models/DB
 ```
 
-- **Routes** (`app/api/v1/routes/`): FastAPI route handlers. Validate input via Pydantic, delegate to services, return ApiResponse.
-- **Services** (`app/services/`): Business logic. Receive DB session, operate on models. All queries live here.
-- **Models** (`app/models/`): SQLAlchemy ORM models. Define tables, relationships, indexes.
-- **Schemas** (`app/schemas/`): Pydantic request/response models. Validate all input/output.
-- **Core** (`app/core/`): Config (env vars), security (JWT, password hashing), dependencies (get_db, get_current_user).
+- **Routes** (`app/api/v1/routes/`): Pydantic in/out, delegate to services, return `ApiResponse`.
+- **Services** (`app/services/`): All queries and business rules.
+- **Models** / **Schemas** / **Core** as usual.
 
 Routes NEVER import SQLAlchemy directly. Services NEVER return HTTP responses.
 
 ## API Response Format
 
-All endpoints return:
 ```json
 {"data": ..., "error": null, "meta": {"total": 42, "page": 1, "per_page": 50, "total_pages": 1}}
 ```
-Error responses: `{"data": null, "error": "message", "meta": null}`
 
-## Key Endpoints
+## Key Endpoint Groups
 
-- `POST /api/v1/auth/setup` (first-time), `POST /api/v1/auth/login`
-- `GET/POST /api/v1/todos`, `GET/PUT/DELETE /api/v1/todos/{id}`
-- `PATCH /api/v1/todos/{id}/complete`, `PATCH /api/v1/todos/{id}/schedule`
-- `GET/POST /api/v1/sections`, `PUT/DELETE /api/v1/sections/{id}`
-- `POST /api/v1/sections/{id}/subsections`, `PUT/DELETE /api/v1/subsections/{id}`
-- `GET/POST /api/v1/labels`, `PUT/DELETE /api/v1/labels/{id}`
+- Auth: `/api/v1/auth/setup`, `login`, `recovery/*`
+- Items / capture / clarify / schedule / complete
+- Domains, standards, reflections, priorities, routines
+- Calendar: connect / callback / sync
+- Reviews, nudges, push, data export/backup
 
-## Environment Abstraction
+## Jobs
 
-App reads config from env vars via Pydantic `BaseSettings`. Same code runs in Docker (Uvicorn) and AWS (Mangum/Lambda). Key vars: `DATABASE_URL`, `JWT_SECRET`, `ENVIRONMENT` (local|staging|production), `CORS_ORIGINS`.
+- `scripts/deliver_reminders.py` (`make reminders`)
+- `scripts/backup_all.py` (`make backup`)
+- `scripts/import_backup.py` (`make import-backup ACCOUNT=… FILE=…`)
 
-## File Naming
+## Environment
 
-- All Python files: snake_case (`todo_service.py`, `todo_routes.py`)
-- Classes: PascalCase (`TodoService`, `TodoCreate`)
-- Functions: snake_case (`get_todos`, `create_todo`)
-- Constants: UPPER_SNAKE_CASE (`MAX_DURATION_MINUTES`)
+`DATABASE_URL`, `JWT_SECRET`, `ENVIRONMENT`, `CORS_ORIGINS`, `APP_BASE_URL`, `FRONTEND_BASE_URL`, `ENCRYPTION_KEY`, `VAPID_*`, `GOOGLE_*`, `MS_*`, optional `SMTP_*`. See `.env.example` and `docs/ops-pending.md`.
 
 ## Conventions
 
-- Async throughout (async def routes, async SQLAlchemy sessions)
-- All public functions have Google-style docstrings
-- Conventional Commits: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`
-- Type hints on all functions. mypy strict mode.
-- Ruff for formatting + linting (replaces black/isort/flake8).
+- Async throughout; Google-style docstrings on public functions; mypy strict; Ruff; Conventional Commits.
 
 ## Reference Docs
 
-- `docs/lld-backend.md` -- Backend LLD: DB schema, Pydantic schemas, API contracts, service layer, auth flow
-- `docs/plans/` -- Versioned project plans (v0, v1, v2) -- shared across FE and BE repos
+- `docs/lld-backend.md`, `docs/data-trust.md`, `docs/ops-pending.md`
+- `docs/plans/v3-life-command-center.md`

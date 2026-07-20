@@ -36,6 +36,15 @@ class Settings(BaseSettings):
     # Account recovery: how long a recovery code is valid (minutes).
     recovery_code_ttl_minutes: int = 30
 
+    # Optional SMTP for recovery email (and future transactional mail).
+    # When unset in local, EmailService logs to the console instead.
+    smtp_host: str | None = None
+    smtp_port: int = 587
+    smtp_user: str | None = None
+    smtp_password: str | None = None
+    smtp_from: str | None = None
+    smtp_use_tls: bool = True
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

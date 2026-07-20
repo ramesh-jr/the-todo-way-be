@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from fastapi import APIRouter, status
 
-from app.core.dependencies import DbSession
+from app.core.config import settings
+from app.core.dependencies import DbSession  # noqa: TC001
 from app.schemas.auth import (
     AuthLogin,
     AuthSetup,
@@ -37,13 +38,16 @@ async def login(data: AuthLogin, db: DbSession) -> ApiResponse[AuthToken]:
 @router.post("/recovery/request")
 async def request_recovery(
     data: RecoveryRequest, db: DbSession
-) -> ApiResponse[dict[str, bool]]:
-    """Request a recovery code. Always returns ok to avoid revealing account existence.
+) -> ApiResponse[dict[str, bool | str | None]]:
+    """Request a recovery code. Always returns a generic payload.
 
-    In production the code is emailed; the local/dev build returns it for testing.
+    EmailService emails the code when SMTP is configured, or logs it in local.
+    In local/dev the plaintext code is also returned as ``dev_code`` for testing.
     """
     code = await AuthService(db).request_recovery(data.username)
-    payload: dict[str, bool] = {"sent": code is not None}
+    payload: dict[str, bool | str | None] = {"sent": code is not None}
+    if settings.environment == "local" and code is not None:
+        payload["dev_code"] = code
     return ApiResponse(data=payload)
 
 

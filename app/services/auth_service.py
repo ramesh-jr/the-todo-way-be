@@ -59,11 +59,14 @@ class AuthService:
         return create_access_token(user.id)
 
     async def request_recovery(self, username: str) -> str | None:
-        """Issue a recovery code. Returns the code (the route decides delivery).
+        """Issue a recovery code, deliver via EmailService, return the plaintext code.
 
         Returns None if there is no recovery email on file; callers should not reveal
-        whether an account/email exists.
+        whether an account/email exists. The plaintext code is returned so local/dev
+        routes can surface it for testing; production should only email it.
         """
+        from app.services.email_service import EmailService
+
         user = await self.db.scalar(select(User).where(User.username == username))
         if user is None or not user.recovery_email:
             return None
@@ -73,6 +76,9 @@ class AuthService:
             minutes=settings.recovery_code_ttl_minutes
         )
         await self.db.commit()
+        EmailService().send_recovery_code(
+            to=user.recovery_email, username=user.username, code=code
+        )
         return code
 
     async def reset_password(self, data: RecoveryReset) -> str:
