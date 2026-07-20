@@ -57,5 +57,6 @@ Routes NEVER import SQLAlchemy directly. Services NEVER return HTTP responses.
 
 ## Reference Docs
 
+- **`docs/ai-context.md`** — start here for any new session (decisions, pending, test checklist)
 - `docs/lld-backend.md`, `docs/data-trust.md`, `docs/ops-pending.md`
 - `docs/plans/v3-life-command-center.md`

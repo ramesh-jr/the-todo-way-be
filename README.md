@@ -62,6 +62,7 @@ docs/
 
 ## Documentation
 
+- [AI / handoff context (decisions, pending, what to test)](docs/ai-context.md)
 - [Backend LLD](docs/lld-backend.md)
 - [Data trust](docs/data-trust.md)
 - [v3 plan](docs/plans/v3-life-command-center.md)

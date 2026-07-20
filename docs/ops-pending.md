@@ -8,12 +8,13 @@ Code for the Life Command Center is in place. Everything below needs **your** ac
 
 Goal: FE talks to BE with Postgres.
 
-1. **Backend**
+1. **Backend** (local Postgres via Homebrew — Docker is optional and not required)
    ```bash
+   brew services start postgresql@14   # or your installed version
+   # ensure user/db exist; DATABASE_URL matches .env
    cd the-todo-way-be
    cp .env.example .env
    # Set JWT_SECRET to a long random string
-   docker compose up db -d
    make migrate
    make dev
    ```
@@ -150,6 +151,10 @@ Local already logs codes. For real mail:
 ---
 
 ## 7. Production deploy (your hosting choice)
+
+**Phone-ready path (recommended):** follow the step-by-step runbook  
+→ [`docs/deploy-neon-railway-vercel.md`](./deploy-neon-railway-vercel.md)  
+(Neon Postgres → Railway API → Vercel FE + PWA install).
 
 Typical shape:
 
